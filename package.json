@@ -1,0 +1,27 @@
+{
+  "name": "hyperscan",
+  "version": "0.0.1",
+  "description": "Bindings for using Intel's hyperscan library to quickly and effeciently scan strings against a database of regular express patterns",
+  "keywords": [
+    "hyperscan",
+    "regex",
+    "regular expression",
+    "multi pattern",
+    "multiple regex matching"
+  ],
+  "license": "BSD-3-Clause",
+  "contributors": [
+      "Jacob Hull <jacob.hull@logdna.com>",
+  ],
+  "main": "./index.js",
+  "dependencies": {
+    "nan": "^2.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install": "node-gyp rebuild"
+  },
+  "license": "ISC",
+  "gypfile": true
+}
