@@ -8,12 +8,12 @@
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")",
-                "vendor"
+                "vendor/src"
             ],
             "link_settings": {
                 "libraries": [
                     "-lstdc++",
-                    "../lib/libhs.a"
+                    "../vendor/build/lib/libhs.a"
                 ]
             },
             "xcode_settings": {

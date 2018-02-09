@@ -11,7 +11,7 @@
   ],
   "license": "BSD-3-Clause",
   "contributors": [
-      "Jacob Hull <jacob.hull@logdna.com>",
+    "Jacob Hull <jacob.hull@logdna.com>"
   ],
   "main": "./index.js",
   "dependencies": {
@@ -20,8 +20,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "node-gyp rebuild"
+    "install": "mkdir ./vendor/build; cd ./vendor/build; cmake -G \"Unix Makefiles\" ../; cmake --build .; cd ../../; node-gyp rebuild;"
   },
-  "license": "ISC",
   "gypfile": true
 }
