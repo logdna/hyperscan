@@ -22,5 +22,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "install": "mkdir ./vendor/build; cd ./vendor/build; cmake -G \"Unix Makefiles\" ../; cmake --build .; cd ../../; node-gyp rebuild;"
   },
+  "repository": {
+      "type": "git"
+      , "url": "git+https://github.com/logdna/hyperscan"
+  },
   "gypfile": true
 }
