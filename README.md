@@ -29,7 +29,7 @@ npm test
 
 ## Release History
 
-* 0.0.1
+* 0.0.x
     * Work in progress
 
 ## Contributing
