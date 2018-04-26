@@ -4,24 +4,59 @@
 
 struct PatternOptions
 {
-    PatternOptions() : startOfMatch(0), singleMatch(0)
+    PatternOptions() : caseLess(0), dotAll(0), multiLine(0), singleMatch(0), allowEmpty(0), utf8(0), ucp(0), preFilter(0), startOfMatch(0)
     {
     }
 
-    PatternOptions(bool startOfMatch, bool singleMatch) : PatternOptions()
+    PatternOptions(bool caseLess, bool dotAll, bool multiLine, bool singleMatch, bool allowEmpty, bool utf8, bool ucp, bool preFilter, bool startOfMatch) : PatternOptions()
     {
-        if(startOfMatch == true)
-        {
-            this->startOfMatch = HS_FLAG_SOM_LEFTMOST;
+        if(caseLess == true) {
+            this->caseLess = HS_FLAG_CASELESS;
+        }
+
+        if(dotAll == true) {
+            this->dotAll = HS_FLAG_DOTALL;
+        }
+
+        if(multiLine == true) {
+            this->multiLine =  HS_FLAG_MULTILINE;
         }
 
         if(singleMatch == true) {
             this->singleMatch = HS_FLAG_SINGLEMATCH;
         }
+
+        if(allowEmpty == true) {
+            this->allowEmpty = HS_FLAG_ALLOWEMPTY;
+        }
+
+        if(utf8 == true) {
+            this->utf8 = HS_FLAG_UTF8;
+        }
+
+        if(ucp == true) {
+            this->ucp = HS_FLAG_UCP;
+        }
+
+        if(preFilter == true) {
+            this->preFilter = HS_FLAG_PREFILTER;
+        }
+
+        if(startOfMatch == true)
+        {
+            this->startOfMatch = HS_FLAG_SOM_LEFTMOST;
+        }
     }
 
-    unsigned int startOfMatch;
+    unsigned int caseLess;
+    unsigned int dotAll;
+    unsigned int multiLine;
     unsigned int singleMatch;
+    unsigned int allowEmpty;
+    unsigned int utf8;
+    unsigned int ucp;
+    unsigned int preFilter;
+    unsigned int startOfMatch;
 };
 
 Nan::Persistent<v8::FunctionTemplate> HyperscanDatabase::constructor;
@@ -102,14 +137,36 @@ NAN_METHOD(HyperscanDatabase::New)
 
         v8::Local<v8::Object> option = nodeOptions->Get(i)->ToObject();
 
-        bool startOfMatch = false;
-        v8::Local<v8::String> startOfMatchKey = Nan::New("HS_FLAG_SOM_LEFTMOST").ToLocalChecked();
-        if(option->HasOwnProperty(Nan::GetCurrentContext(), startOfMatchKey).FromMaybe(false))
+        bool caseLess = false;
+        v8::Local<v8::String> caseLessKey = Nan::New("HS_FLAG_CASELESS").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), caseLessKey).FromMaybe(false))
         {
-            v8::Local<v8::Value> startOfMatchValue = option->Get(startOfMatchKey);
-            if (startOfMatchValue->IsBoolean())
+            v8::Local<v8::Value> caseLessValue = option->Get(caseLessKey);
+            if (caseLessValue->IsBoolean())
             {
-                startOfMatch = startOfMatchValue->BooleanValue();
+                caseLess = caseLessValue->BooleanValue();
+            }
+        }
+
+        bool dotAll = false;
+        v8::Local<v8::String> dotAllKey = Nan::New("HS_FLAG_DOTALL").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), dotAllKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> dotAllValue = option->Get(dotAllKey);
+            if (dotAllValue->IsBoolean())
+            {
+                dotAll = dotAllValue->BooleanValue();
+            }
+        }
+
+        bool multiLine = false;
+        v8::Local<v8::String> multiLineKey = Nan::New("HS_FLAG_MULTILINE").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), multiLineKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> multiLineValue = option->Get(multiLineKey);
+            if (multiLineValue->IsBoolean())
+            {
+                multiLine = multiLineValue->BooleanValue();
             }
         }
 
@@ -124,7 +181,62 @@ NAN_METHOD(HyperscanDatabase::New)
             }
         }
 
-        options.push_back(PatternOptions(startOfMatch, singleMatch));
+        bool allowEmpty = false;
+        v8::Local<v8::String> allowEmptyKey = Nan::New("HS_FLAG_ALLOWEMPTY").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), allowEmptyKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> allowEmptyValue = option->Get(allowEmptyKey);
+            if (allowEmptyValue->IsBoolean())
+            {
+                allowEmpty = allowEmptyValue->BooleanValue();
+            }
+        }
+
+        bool utf8 = false;
+        v8::Local<v8::String> utf8Key = Nan::New("HS_FLAG_UTF8").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), utf8Key).FromMaybe(false))
+        {
+            v8::Local<v8::Value> utf8Value = option->Get(utf8Key);
+            if (utf8Value->IsBoolean())
+            {
+                utf8 = utf8Value->BooleanValue();
+            }
+        }
+
+        bool ucp = false;
+        v8::Local<v8::String> ucpKey = Nan::New("HS_FLAG_UCP").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), ucpKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> ucpValue = option->Get(ucpKey);
+            if (ucpValue->IsBoolean())
+            {
+                ucp = ucpValue->BooleanValue();
+            }
+        }
+
+        bool preFilter = false;
+        v8::Local<v8::String> preFilterKey = Nan::New("HS_FLAG_PREFILTER").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), preFilterKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> preFilterValue = option->Get(preFilterKey);
+            if (preFilterValue->IsBoolean())
+            {
+                preFilter = preFilterValue->BooleanValue();
+            }
+        }
+
+        bool startOfMatch = false;
+        v8::Local<v8::String> startOfMatchKey = Nan::New("HS_FLAG_SOM_LEFTMOST").ToLocalChecked();
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), startOfMatchKey).FromMaybe(false))
+        {
+            v8::Local<v8::Value> startOfMatchValue = option->Get(startOfMatchKey);
+            if (startOfMatchValue->IsBoolean())
+            {
+                startOfMatch = startOfMatchValue->BooleanValue();
+            }
+        }
+
+        options.push_back(PatternOptions(caseLess, dotAll, multiLine, singleMatch, allowEmpty, utf8, ucp, preFilter, startOfMatch));
     }
 
     // If some options are missing we fill them in
