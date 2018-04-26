@@ -77,7 +77,8 @@ NAN_METHOD(HyperscanDatabase::New)
 
     // Convert node array of node strings into a vector of strings
     v8::Local<v8::Array> nodePatterns = v8::Local<v8::Array>::Cast(info[0]);
-    std::vector<std::string> patterns = std::vector<std::string>();
+    std::vector<std::string> patterns;
+    patterns.reserve(nodePatterns->Length());
     for(size_t i = 0; i < nodePatterns->Length(); ++i)
     {
         if(!nodePatterns->Get(i)->IsString())
@@ -91,7 +92,7 @@ NAN_METHOD(HyperscanDatabase::New)
 
     // Convert node array of options into a vector of options
     v8::Local<v8::Array> nodeOptions = v8::Local<v8::Array>::Cast(info[1]);
-    std::vector<PatternOptions> options = std::vector<PatternOptions>();
+    std::vector<PatternOptions> options = std::vector<PatternOptions>(nodeOptions->Length());
     for(size_t i = 0; i < nodeOptions->Length(); ++i)
     {
         if(!nodeOptions->Get(i)->IsObject())
@@ -138,8 +139,11 @@ NAN_METHOD(HyperscanDatabase::New)
 
     // Convert patterns from a vector of strings to a const char * const *
     std::vector<const char*> cStrings;
+    cStrings.reserve(patterns.size());
     std::vector<unsigned int> ids;
+    ids.reserve(patterns.size());
     std::vector<unsigned int> flags;
+    flags.reserve(patterns.size());
     for(size_t i = 0; i < patterns.size(); ++i) {
         cStrings.push_back(patterns[i].c_str());
         ids.push_back(i);
