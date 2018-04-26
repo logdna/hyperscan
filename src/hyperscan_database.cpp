@@ -87,7 +87,7 @@ NAN_METHOD(HyperscanDatabase::New)
         }
 
         Nan::Utf8String nodePattern(nodePatterns->Get(i));
-        patterns.push_back(std::string(*nodePattern));
+        patterns.push_back(std::string(*nodePattern, nodePattern.length()));
     }
 
     // Convert node array of options into a vector of options
@@ -104,7 +104,7 @@ NAN_METHOD(HyperscanDatabase::New)
 
         bool startOfMatch = false;
         v8::Local<v8::String> startOfMatchKey = Nan::New("HS_FLAG_SOM_LEFTMOST").ToLocalChecked();
-        if(option->HasOwnProperty(Nan::GetCurrentContext(), startOfMatchKey).FromJust())
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), startOfMatchKey).FromMaybe(false))
         {
             v8::Local<v8::Value> startOfMatchValue = option->Get(startOfMatchKey);
             if (startOfMatchValue->IsBoolean())
@@ -115,7 +115,7 @@ NAN_METHOD(HyperscanDatabase::New)
 
         bool singleMatch = false;
         v8::Local<v8::String> singleMatchKey = Nan::New("HS_FLAG_SINGLEMATCH").ToLocalChecked();
-        if(option->HasOwnProperty(Nan::GetCurrentContext(), singleMatchKey).FromJust())
+        if(option->HasOwnProperty(Nan::GetCurrentContext(), singleMatchKey).FromMaybe(false))
         {
             v8::Local<v8::Value> singleMatchValue = option->Get(singleMatchKey);
             if (singleMatchValue->IsBoolean())
@@ -188,7 +188,7 @@ NAN_METHOD(HyperscanDatabase::Scan)
 
     // Convert input from a node string to a c++ string
     Nan::Utf8String nodeInput(info[0]);
-    std::string input(*nodeInput);
+    std::string input(*nodeInput, nodeInput.length());
 
     // Do the search with hyperscan
     if(hs_scan(self->m_database, input.c_str(), input.length(), 0, self->m_scratch, HyperscanDatabase::ScanEventHandler, static_cast<void*>(self)) != HS_SUCCESS)
