@@ -2,9 +2,9 @@
 
 #include "hyperscan_database.h"
 
-NAN_MODULE_INIT( InitModule )
+NAN_MODULE_INIT(InitModule)
 {
-    HyperscanDatabase::Init( target );
+    HyperscanDatabase::Init(target);
 }
 
-NODE_MODULE( node_hyperscan, InitModule );
+NODE_MODULE(node_hyperscan, InitModule);
