@@ -1,7 +1,7 @@
 {
   "name": "hyperscan",
   "version": "0.0.1",
-  "description": "Bindings for using Intel's hyperscan library to quickly and effeciently scan strings against a database of regular express patterns",
+  "description": "Bindings for Intel's hyperscan library to quickly and effeciently scan strings against a database of regular expression patterns",
   "keywords": [
     "hyperscan",
     "regex",
@@ -11,7 +11,7 @@
   ],
   "license": "BSD-3-Clause",
   "contributors": [
-    "Jacob Hull <jacob.hull@logdna.com>"
+    "Jacob Hull <jacob@planethull.com>"
   ],
   "main": "./index.js",
   "dependencies": {
