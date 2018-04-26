@@ -1,6 +1,6 @@
 {
   "name": "hyperscan",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bindings for Intel's hyperscan library to quickly and effeciently scan strings against a database of regular expression patterns",
   "keywords": [
     "hyperscan",
@@ -23,8 +23,8 @@
     "install": "mkdir ./vendor/build; cd ./vendor/build; cmake -G \"Unix Makefiles\" ../; cmake --build .; cd ../../; node-gyp rebuild;"
   },
   "repository": {
-      "type": "git"
-      , "url": "git+https://github.com/logdna/hyperscan"
+    "type": "git",
+    "url": "git+https://github.com/logdna/hyperscan"
   },
   "gypfile": true
 }
