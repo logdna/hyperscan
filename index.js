@@ -7,4 +7,12 @@ let db = new addon.HyperscanDatabase(['test.*stuff'], [{
     , singleMatch: true
 }]);
 
-console.log(db.scan('some stuff over here test anything goes here and stuf'));
+let string = 'some stuff over here test anything goes here and  stuff......................................................................................................................................................................................................................................';
+let buffer = Buffer.from(string);
+let ret;
+
+for (let i = 0; i < 1000000; ++i) {
+    ret = db.scan(string);
+}
+
+console.log(ret);

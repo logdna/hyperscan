@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <node_buffer.h>
 
 #include "hyperscan_database.h"
 
@@ -293,17 +294,27 @@ NAN_METHOD(HyperscanDatabase::Scan)
         return Nan::ThrowTypeError("HyperscanDatabase::Scan - unexpected number of arguments");
     }
 
-    if(!info[0]->IsString())
+    const char* rawInput;
+    size_t rawInputLength;
+    if (info[0]->IsString())
     {
-        return Nan::ThrowTypeError("HyperscanDatabase::Scan - expected string as first argument");
+        Nan::Utf8String nodeInput(info[0]);
+        rawInputLength = nodeInput.length();
+        rawInput = std::string(*nodeInput, rawInputLength).c_str();
+    }
+    else if (info[0]->IsUint8Array())
+    {
+        v8::Local<v8::Object> bufferObj = info[0]->ToObject();
+        rawInput = node::Buffer::Data(bufferObj);
+        rawInputLength = node::Buffer::Length(bufferObj);
+    }
+    else
+    {
+        return Nan::ThrowTypeError("HyperscanDatabase::Scan - expected string or buffer as first argument");
     }
 
-    // Convert input from a node string to a c++ string
-    Nan::Utf8String nodeInput(info[0]);
-    std::string input(*nodeInput, nodeInput.length());
-
     // Do the search with hyperscan
-    if(hs_scan(self->m_database, input.c_str(), input.length(), 0, self->m_scratch, HyperscanDatabase::ScanEventHandler, static_cast<void*>(self)) != HS_SUCCESS)
+    if(hs_scan(self->m_database, rawInput, rawInputLength, 0, self->m_scratch, HyperscanDatabase::ScanEventHandler, static_cast<void*>(self)) != HS_SUCCESS)
     {
         hs_free_scratch(self->m_scratch);
         hs_free_database(self->m_database);
@@ -322,5 +333,6 @@ NAN_METHOD(HyperscanDatabase::Scan)
         nodeMatches->Set(matchCount++, nodeMatch);
     }
 
+    self->m_scanMatches.clear();
     info.GetReturnValue().Set(nodeMatches);
 }
