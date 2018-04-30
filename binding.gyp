@@ -13,7 +13,7 @@
             "link_settings": {
                 "libraries": [
                     "-lstdc++",
-                    "../vendor/build/lib/libhs.a"
+                    "../vendor_build/lib/libhs.a"
                 ]
             },
             "xcode_settings": {

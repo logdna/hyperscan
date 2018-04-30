@@ -20,7 +20,7 @@
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "mkdir ./vendor/build; cd ./vendor/build; cmake -G \"Unix Makefiles\" ../; cmake --build .; cd ../../; node-gyp rebuild;"
+    "install": "mkdir -p ./vendor_build; cd ./vendor_build; cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=MinSizeRel ../vendor; cmake --build .; cd ../; node-gyp rebuild;"
   },
   "repository": {
     "type": "git",
