@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <node_buffer.h>
 
 #include "hyperscan_database.h"
@@ -58,6 +57,22 @@ struct PatternOptions
     unsigned int ucp;
     unsigned int preFilter;
     unsigned int startOfMatch;
+};
+
+struct ScanOptions {
+    ScanOptions() : optimizedReturn(0)
+    {
+    }
+
+    ScanOptions(unsigned int optimizedReturn) : ScanOptions()
+    {
+        if(optimizedReturn == 1 || optimizedReturn == 2)
+        {
+            this->optimizedReturn = optimizedReturn;
+        }
+    }
+
+    unsigned int optimizedReturn;
 };
 
 Nan::Persistent<v8::FunctionTemplate> HyperscanDatabase::constructor;
@@ -145,7 +160,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> caseLessValue = option->Get(caseLessKey);
             if (caseLessValue->IsBoolean())
             {
-                caseLess = caseLessValue->BooleanValue();
+                caseLess = caseLessValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -156,7 +171,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> dotAllValue = option->Get(dotAllKey);
             if (dotAllValue->IsBoolean())
             {
-                dotAll = dotAllValue->BooleanValue();
+                dotAll = dotAllValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -167,7 +182,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> multiLineValue = option->Get(multiLineKey);
             if (multiLineValue->IsBoolean())
             {
-                multiLine = multiLineValue->BooleanValue();
+                multiLine = multiLineValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -178,7 +193,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> singleMatchValue = option->Get(singleMatchKey);
             if (singleMatchValue->IsBoolean())
             {
-                singleMatch = singleMatchValue->BooleanValue();
+                singleMatch = singleMatchValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -189,7 +204,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> allowEmptyValue = option->Get(allowEmptyKey);
             if (allowEmptyValue->IsBoolean())
             {
-                allowEmpty = allowEmptyValue->BooleanValue();
+                allowEmpty = allowEmptyValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -200,7 +215,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> utf8Value = option->Get(utf8Key);
             if (utf8Value->IsBoolean())
             {
-                utf8 = utf8Value->BooleanValue();
+                utf8 = utf8Value->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -211,7 +226,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> ucpValue = option->Get(ucpKey);
             if (ucpValue->IsBoolean())
             {
-                ucp = ucpValue->BooleanValue();
+                ucp = ucpValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -222,7 +237,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> preFilterValue = option->Get(preFilterKey);
             if (preFilterValue->IsBoolean())
             {
-                preFilter = preFilterValue->BooleanValue();
+                preFilter = preFilterValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -233,7 +248,7 @@ NAN_METHOD(HyperscanDatabase::New)
             v8::Local<v8::Value> startOfMatchValue = option->Get(startOfMatchKey);
             if (startOfMatchValue->IsBoolean())
             {
-                startOfMatch = startOfMatchValue->BooleanValue();
+                startOfMatch = startOfMatchValue->BooleanValue(Nan::GetCurrentContext()).FromMaybe(false);
             }
         }
 
@@ -289,7 +304,7 @@ NAN_METHOD(HyperscanDatabase::Scan)
     HyperscanDatabase *self = Nan::ObjectWrap::Unwrap<HyperscanDatabase>(info.This());
 
     // Check input types
-    if(info.Length() != 1)
+    if(info.Length() != 1 && info.Length() != 2)
     {
         return Nan::ThrowTypeError("HyperscanDatabase::Scan - unexpected number of arguments");
     }
@@ -300,7 +315,7 @@ NAN_METHOD(HyperscanDatabase::Scan)
     {
         Nan::Utf8String nodeInput(info[0]);
         rawInputLength = nodeInput.length();
-        rawInput = std::string(*nodeInput, rawInputLength).c_str();
+        rawInput = *nodeInput;
     }
     else if (info[0]->IsUint8Array())
     {
@@ -313,6 +328,30 @@ NAN_METHOD(HyperscanDatabase::Scan)
         return Nan::ThrowTypeError("HyperscanDatabase::Scan - expected string or buffer as first argument");
     }
 
+    unsigned int optimizedReturn = 0;
+    if (info.Length() == 2)
+    {
+        if (info[1]->IsObject())
+        {
+            v8::Local<v8::Object> option = v8::Local<v8::Object>::Cast(info[1]);
+            v8::Local<v8::String> optimizedReturnKey = Nan::New("optimizedReturn").ToLocalChecked();
+            if(option->HasOwnProperty(Nan::GetCurrentContext(), optimizedReturnKey).FromMaybe(false))
+            {
+                v8::Local<v8::Value> optimizedReturnValue = option->Get(optimizedReturnKey);
+                if(optimizedReturnValue->IsUint32())
+                {
+                    optimizedReturn = static_cast<unsigned int>(optimizedReturnValue->Uint32Value(Nan::GetCurrentContext()).FromMaybe(0));
+                }
+            }
+        }
+        else
+        {
+            return Nan::ThrowTypeError("HyperscanDatabase::Scan - expected object as second argument");
+        }
+    }
+
+    ScanOptions scanOptions = ScanOptions(optimizedReturn);
+
     // Do the search with hyperscan
     if(hs_scan(self->m_database, rawInput, rawInputLength, 0, self->m_scratch, HyperscanDatabase::ScanEventHandler, static_cast<void*>(self)) != HS_SUCCESS)
     {
@@ -321,18 +360,46 @@ NAN_METHOD(HyperscanDatabase::Scan)
         return Nan::ThrowTypeError("HyperscanDatabase::Scan - hyperscan failed to scan input string");
     }
 
-    // Transform our vector of tuples into an array of objects for scan matches
-    v8::Local<v8::Array> nodeMatches = v8::Array::New(info.GetIsolate());
-    unsigned int matchCount = 0;
-    for(const auto& match : self->m_scanMatches)
+    if(scanOptions.optimizedReturn == 2)
     {
-        v8::Local<v8::Object> nodeMatch = v8::Object::New(info.GetIsolate());
-        nodeMatch->Set(Nan::New("patternId").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<0>(match))));
-        nodeMatch->Set(Nan::New("offsetStart").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<1>(match))));
-        nodeMatch->Set(Nan::New("offsetEnd").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<2>(match))));
-        nodeMatches->Set(matchCount++, nodeMatch);
+        // Return a 1d typed array (can be 4-8x faster than other methods for scans with lots of matches)
+        v8::Local<v8::Uint32Array> nodeMatches = v8::Uint32Array::New(v8::ArrayBuffer::New(info.GetIsolate(), 4 * 3 * self->m_scanMatches.size()), 0, 3 * self->m_scanMatches.size());
+        uint32_t *ptr = *Nan::TypedArrayContents<uint32_t>(nodeMatches);
+        for(const auto& match : self->m_scanMatches)
+        {
+            *(ptr++) = static_cast<uint32_t>(std::get<0>(match));
+            *(ptr++) = static_cast<uint32_t>(std::get<1>(match));
+            *(ptr++) = static_cast<uint32_t>(std::get<2>(match));
+        }
+        info.GetReturnValue().Set(nodeMatches);
+    }
+    else
+    {
+        v8::Local<v8::Array> nodeMatches = v8::Array::New(info.GetIsolate(), self->m_scanMatches.size());
+        unsigned int matchCount = 0;
+        for(const auto& match : self->m_scanMatches)
+        {
+            if(scanOptions.optimizedReturn == 0)
+            {
+                // Return a 2d array (best for scans with only a couple of matches)
+                v8::Local<v8::Object> nodeMatch = v8::Object::New(info.GetIsolate());
+                nodeMatch->Set(Nan::New("patternId").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<0>(match))));
+                nodeMatch->Set(Nan::New("offsetStart").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<1>(match))));
+                nodeMatch->Set(Nan::New("offsetEnd").ToLocalChecked(), Nan::New(static_cast<uint32_t>(std::get<2>(match))));
+                nodeMatches->Set(matchCount++, nodeMatch);
+            }
+            else
+            {
+                // Return an array of objects (best for readability)
+                v8::Local<v8::Array> nodeMatch = v8::Array::New(info.GetIsolate(), 3);
+                nodeMatch->Set(0, Nan::New(static_cast<uint32_t>(std::get<0>(match))));
+                nodeMatch->Set(1, Nan::New(static_cast<uint32_t>(std::get<1>(match))));
+                nodeMatch->Set(2, Nan::New(static_cast<uint32_t>(std::get<2>(match))));
+                nodeMatches->Set(matchCount++, nodeMatch);
+            }
+        }
+        info.GetReturnValue().Set(nodeMatches);
     }
 
     self->m_scanMatches.clear();
-    info.GetReturnValue().Set(nodeMatches);
 }
