@@ -13,15 +13,16 @@ public:
 
     static int ScanEventHandler(unsigned int id, unsigned long long from, unsigned long long to, unsigned int flags, void *context);
 
-    std::vector<std::string> m_patterns;
-    hs_database_t *m_database;
-    hs_scratch_t *m_scratch;
-    std::vector<std::tuple<unsigned int, unsigned long long, unsigned long long>> m_scanMatches;
-
     static NAN_MODULE_INIT(Init);
-
     static NAN_METHOD(New);
     static NAN_METHOD(Scan);
+    static NAN_METHOD(MultiScan);
+
+    std::vector<std::string> m_patterns;
+    std::vector<std::tuple<unsigned int, unsigned long long, unsigned long long>> m_scanMatches;
+
+    static hs_scratch_t *s_scratch;
+    hs_database_t *m_database;
 
     static Nan::Persistent<v8::FunctionTemplate> constructor;
 };

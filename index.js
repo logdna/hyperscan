@@ -12,9 +12,12 @@ let buffer = Buffer.from(string);
 let ret;
 
 for (let i = 0; i < 1000000; ++i) {
+    /*
     ret = db.scan(buffer, {
         optimizedReturn: 2
     });
+    */
+    ret = addon.HyperscanDatabase.multiScan(buffer, [db, db], {optimizedReturn:2});
 }
 
 console.log(ret);
